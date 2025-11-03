@@ -1,0 +1,58 @@
+# =============================================================================
+# Production Overlay for ML Recommendation Inference
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ml-inference-prod
+
+resources:
+  - ../../base
+
+# Image override for production
+images:
+  - name: inference
+    newName: 123456789012.dkr.ecr.ap-southeast-2.amazonaws.com/ml-fashion-recommender/inference
+    newTag: main-latest  # Use main-latest or specific SHA tag
+
+# Replica override for production
+replicas:
+  - name: ml-recommendation-inference
+    count: 5
+
+# Resource patches for production
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "4000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "4Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "1000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "2Gi"
+    target:
+      kind: Deployment
+      name: ml-recommendation-inference
+  
+  # Production IAM role for AWS IRSA
+  - patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::123456789012:role/ml-inference-prod-role"
+    target:
+      kind: ServiceAccount
+      name: ml-inference-sa
+
+# Labels and annotations for production
+commonLabels:
+  environment: production
+  tier: production
+
+commonAnnotations:
+  argocd.argoproj.io/sync-wave: "0"
+
