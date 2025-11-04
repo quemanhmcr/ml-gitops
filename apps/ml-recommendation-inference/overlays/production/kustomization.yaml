@@ -10,7 +10,7 @@ resources:
 images:
   - name: inference
     newName: 465002806239.dkr.ecr.ap-southeast-2.amazonaws.com/ml-fashion-recommender/inference
-    newTag: main-latest # Use main-latest or specific SHA tag
+    newTag: main-5701248271a4ccc391391dcddc1210829e85956a # Use main-latest or specific SHA tag
 # Replica override for production
 replicas:
   - name: ml-recommendation-inference
